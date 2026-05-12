@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Editar Futuro - Letterboxd</title>
+</head>
+<body>
+    <div class="form-container">
+        <h1>✎ Editar Filme Futuro</h1>
+        <form method="POST">
+            <div class="input-group">
+                <label>Título do Filme</label>
+                <input type="text" name="titulo" value="{{ futuro['titulo'] }}" required>
+            </div>
+            <div class="input-group">
+                <label>Diretor</label>
+                <input type="text" name="diretor" value="{{ futuro['diretor'] or '' }}">
+            </div>
+            <div class="input-group">
+                <label>Gênero</label>
+                <input type="text" name="genero" value="{{ futuro['genero'] or '' }}">
+            </div>
+            <div class="input-group">
+                <label>Ator/Atriz Principal</label>
+                <input type="text" name="ator_principal" value="{{ futuro['ator_principal'] or '' }}">
+            </div>
+            <div class="input-group">
+                <label>Categoria</label>
+                <input type="text" name="categoria" value="{{ futuro['categoria'] or '' }}">
+            </div>
+            <div class="input-group">
+                <label>Prioridade</label>
+                <select name="prioridade" required>
+                    <option value="5" {% if futuro['prioridade'] == 5 %}selected{% endif %}>5</option>
+                    <option value="4" {% if futuro['prioridade'] == 4 %}selected{% endif %}>4</option>
+                    <option value="3" {% if futuro['prioridade'] == 3 %}selected{% endif %}>3</option>
+                    <option value="2" {% if futuro['prioridade'] == 2 %}selected{% endif %}>2</option>
+                    <option value="1" {% if futuro['prioridade'] == 1 %}selected{% endif %}>1</option>
+                </select>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn-save">Salvar Alterações</button>
+                <a href="/" class="btn-cancel">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

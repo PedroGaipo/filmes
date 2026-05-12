@@ -1,0 +1,428 @@
+/* Cores baseadas no tema dark do Letterboxd */
+body {
+    background-color: #14181c;
+    color: #9ab;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 { color: #fff; text-align: center; }
+
+/* Grid de Filmes */
+.filmes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Card do Filme */
+.filme-card {
+    background-color: #1b2228;
+    border: 1px solid #2c3440;
+    border-radius: 8px;
+    padding: 15px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.filme-card:hover {
+    transform: translateY(-5px);
+    border-color: #456;
+}
+
+.titulo {
+    color: #fff;
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.nota {
+    color: #00e054; /* Verde clássico de avaliação */
+    font-weight: bold;
+}
+
+.btn-add {
+    display: inline-block;
+    background-color: #00b020;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.search-container {
+    text-align: right;
+    margin-bottom: 30px;
+}
+
+#movieSearch {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 20px;
+    background-color: #2c3440;
+    border: 1px solid #456;
+    border-radius: 25px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+}
+
+#movieSearch:focus {
+    border-color: #00e054; /* Verde do Letterboxd ao focar */
+}
+
+/* Estilos do Formulário */
+.form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    background-color: #1b2228;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #2c3440;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    margin-bottom: 8px;
+    color: #fff;
+    font-weight: bold;
+}
+
+.input-group input, .input-group textarea {
+    padding: 10px;
+    background-color: #2c3440;
+    border: 1px solid #456;
+    border-radius: 4px;
+    color: white;
+}
+
+.categoria-input-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.tag-item {
+    background-color: #2c3440;
+    border: 1px solid #456;
+    border-radius: 999px;
+    padding: 6px 10px;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.tag-item button {
+    background: none;
+    border: none;
+    color: #f87171;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+}
+
+.categoria-btn {
+    min-width: 160px;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-save {
+    background-color: #00b020;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    flex: 1;
+}
+
+.btn-cancel {
+    background-color: #456;
+    color: white;
+    text-decoration: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    text-align: center;
+    flex: 1;
+}
+
+.btn-save:hover { background-color: #00e054; }
+
+.filme-card {
+    position: relative; /* Necessário para posicionar o botão X */
+}
+
+.btn-delete {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: rgb(255, 255, 255);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-delete:hover {
+    color: #ff4b4b; /* Vermelho ao passar o mouse */
+}
+
+.review-details {
+    margin-top: 15px;
+    border-top: 1px solid #2c3440;
+    padding-top: 10px;
+    cursor: pointer;
+}
+
+.review-details summary {
+    font-size: 0.85rem;
+    color: #678;
+    list-style: none; /* Remove a setinha padrão se quiser */
+    transition: color 0.2s;
+}
+
+.review-details summary:hover {
+    color: #00e054; /* Verde ao passar o mouse */
+}
+
+.comentario-texto {
+    font-size: 0.9rem;
+    color: #9ab;
+    line-height: 1.4;
+    margin-top: 8px;
+    font-style: italic;
+    background: #242b31;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); overflow-y: auto; }
+.modal-content { background-color: #1b2228; margin: 5% auto; padding: 30px; width: 90%; max-width: 1000px; border-radius: 15px; position: relative; }
+.modal-body { display: flex; gap: 40px; }
+#modalPoster { width: 350px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+.modal-text { color: #9ab; flex: 1; font-size: 1.1rem; }
+.review-box { background: #242b31; padding: 15px; border-radius: 8px; font-style: italic; color: #fff; }
+.modal-nota-destaque { color: #00e054; font-size: 1.5rem; font-weight: bold; margin: 10px 0; }
+.card-poster { width: 100%; height: auto; border-radius: 4px; }
+.delete-form { position: absolute; z-index: 10; top: 5px; right: 5px; }
+
+/* === LISTA FUTUROS (Novos estilos) === */
+#gridFuturos { margin-top: 40px; }
+.futuros-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-item label {
+    color: #cbd5e0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.filter-item input,
+.filter-item select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #456;
+    background-color: #1f2937;
+    color: #fff;
+}
+
+.btn-edit {
+    position: absolute;
+    top: 5px;
+    left: 8px;
+    background: none;
+    border: none;
+    color: #b9f0ff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-edit:hover {
+    color: #00e0ff;
+}
+
+.edit-form {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 11;
+}
+
+.assistidos-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.futuro-card {
+    border-left: 4px solid #ffa500; /* Barra laranja pra diferenciar */
+}
+
+.futuro-meta {
+    color: #facc15;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+}
+
+h2 { color: #fff; border-bottom: 2px solid #2c3440; padding-bottom: 10px; margin-bottom: 20px; }
+
+.futuro-card .info-futuro {
+    font-size: 0.85em;
+    color: #ffa500; /* Laranja pros futuros */
+    line-height: 1.4;
+}
+
+#futuroModal .modal-text p { margin-bottom: 10px; }
+
+/* Filtros Popover */
+.filtros-container {
+    background: linear-gradient(135deg, #1b2228, #242b31);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #456;
+}
+
+.filtros-container input {
+    background-color: #2c3440;
+    border: 1px solid #456;
+    border-radius: 6px;
+    color: white;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.filtros-container input:focus {
+    border-color: #00e054;
+    box-shadow: 0 0 8px rgba(0, 224, 84, 0.3);
+}
+
+.resultados-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-block {
+    padding: 10px 14px;
+    border: 1px solid #456;
+    border-radius: 999px;
+    background: #1b2228;
+    color: #cbd5e0;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.filter-block.active,
+.filter-block:hover {
+    background: #00b020;
+    border-color: #00e054;
+    color: #fff;
+}
+
+.resultado-card {
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 10px;
+}
+
+.resultado-card:hover {
+    background: rgba(0, 176, 32, 0.1);
+    transform: translateY(-3px);
+}
+
+.resultado-card .card-poster {
+    width: 100%;
+    height: 225px;
+    object-fit: cover;
+}
+
+.resultado-card .titulo {
+    font-size: 1rem !important;
+}
+
+.resultado-card small {
+    color: #678;
+    font-size: 0.8rem;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .modal-body { flex-direction: column; }
+    #modalPoster, #futuroPoster { width: 100%; max-width: 300px; margin: 0 auto 20px; }
+    .filtros-container input { margin-bottom: 8px; }
+}
+
+.app-container { display: flex; min-height: 100vh; }
+.sidebar {
+    width: 250px; background: linear-gradient(180deg, #1b2228 0%, #14181c 100%);
+    border-right: 1px solid #2c3440; padding: 20px 0;
+}
+.logo h2 { color: #fff; text-align: center; margin: 0 0 30px; font-size: 1.4rem; }
+.sidebar-menu { list-style: none; padding: 0; margin: 0 0 30px; }
+.sidebar-menu li { 
+    padding: 15px 20px; color: #9ab; cursor: pointer; display: flex; justify-content: space-between;
+    transition: all 0.2s; border-left: 3px solid transparent;
+}
+.sidebar-menu li:hover { background: rgba(0,176,32,0.1); color: #fff; }
+.sidebar-menu li.active { background: rgba(0,224,84,0.2); color: #fff; border-left-color: #00e054; }
+.sidebar-actions { padding: 0 20px; }
+.sidebar-btn { display: block; margin-bottom: 10px; text-align: center; }
+.futuro-btn { background: #ffa500 !important; }
+
+.main-content { flex: 1; padding: 20px; overflow-y: auto; }
+.header { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; }
+.section-title h1 { color: #fff; margin: 0; }
+.content-section { display: none; }
+.content-section.active { display: block; }
+.section-subtitle { color: #fff; margin-bottom: 20px; }

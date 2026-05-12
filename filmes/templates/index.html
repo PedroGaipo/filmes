@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <title>Meu Letterboxd</title>
+    </head>
+    <body>
+        <div class="app-container">
+            <!-- SIDEBAR -->
+            <nav class="sidebar">
+                <div class="logo">
+                    <h2>🎬 Letterboxd</h2>
+                </div>
+                
+                <ul class="sidebar-menu">
+                    <li class="active" onclick="showSection(event, 'assistidos')">
+                        <span>✅ Assistidos</span>
+                        <small id="countAssistidos">{{ filmes|length }}</small>
+                    </li>
+                    <li onclick="showSection(event, 'futuros')">
+                        <span>📋 Futuros</span>
+                        <small id="countFuturos">{{ futuros|length }}</small>
+                    </li>
+                </ul>
+
+                <!-- Botões rápidos -->
+                <div class="sidebar-actions">
+                    <a href="/adicionar" class="btn-add sidebar-btn">+ Filme</a>
+                    <a href="#" class="btn-add sidebar-btn futuro-btn" onclick="showListaFuturos(); return false;">+ Futuro</a>
+                    <a href="/importar_excel" class="btn-add sidebar-btn" style="background-color: #28a745;">📊 Importar Excel</a>
+                </div>
+            </nav>
+
+            <!-- CONTEÚDO PRINCIPAL -->
+            <main class="main-content">
+                <div class="section-title">
+                    <h1 id="sectionTitle">Assistidos</h1>
+                </div>
+                <!-- Header com busca -->
+                <div class="header">
+                    <div class="search-container">
+                        <input type="text" id="movieSearch" placeholder="Pesquisar filmes..." onkeyup="filterMovies()">
+                    </div>
+                </div>
+
+
+                <!-- SEÇÃO: Filmes Assistidos -->
+                <div id="contentAssistidos" class="content-section active">
+                    <div class="assistidos-filters futuross-filters">
+                        <div class="filter-item">
+                            <label>Ordenar por</label>
+                            <select id="assistidosOrdenacao" onchange="aplicarFiltrosAssistidos()">
+                                <option value="nota">Nota</option>
+                                <option value="titulo_asc">Título A-Z</option>
+                                <option value="titulo_desc">Título Z-A</option>
+                                <option value="id_desc">Mais recentes</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Nota</label>
+                            <select id="filterNotaAssistidos" onchange="aplicarFiltrosAssistidos()">
+                                <option value="all">Todas</option>
+                                <option value="10">10</option>
+                                <option value="9">9</option>
+                                <option value="8">8</option>
+                                <option value="7">7</option>
+                                <option value="6">6</option>
+                                <option value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Categoria</label>
+                            <div class="category-filters" id="assistidosCategoryFilters">
+                                <button type="button" class="filter-block active" data-category="all" onclick="toggleCategoriaAssistidos(this)">Todas</button>
+                                {% for categoria in categorias_assistidos %}
+                                <button type="button" class="filter-block" data-category="{{ categoria }}" onclick="toggleCategoriaAssistidos(this)">{{ categoria }}</button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="filter-item">
+                            <label>Diretor</label>
+                            <input type="text" id="filterDiretorAssistidos" placeholder="Ex: Nolan" oninput="aplicarFiltrosAssistidos()">
+                        </div>
+                        <div class="filter-item">
+                            <label>Ator/Atriz</label>
+                            <input type="text" id="filterAtorAssistidos" placeholder="Ex: McConaughey" oninput="aplicarFiltrosAssistidos()">
+                        </div>
+                    </div>
+                    <div class="filmes-grid" id="gridAssistidos">
+                        {% for filme in filmes %}
+                        <div class="filme-card" onclick="openModal(event)" 
+                            data-id="{{ filme['id'] }}"
+                            data-titulo="{{ filme['titulo'] }}"
+                            data-diretor="{{ filme['diretor'] }}"
+                            data-ano="{{ filme['ano'] }}"
+                            data-nota="{{ filme['nota'] }}"
+                            data-categoria="{{ filme['categoria'] or '' }}"
+                            data-sinopse="{{ filme['sinopse'] }}"
+                            data-elenco="{{ filme['elenco'] }}"
+                            data-review="{{ filme['comentario'] }}"
+                            data-poster="{{ filme['poster_url'] }}">
+                            <form action="{{ url_for('editar', id=filme['id']) }}" method="GET" class="edit-form">
+                                <button type="submit" class="btn-edit" onclick="event.stopPropagation();">✎</button>
+                            </form>
+                            <form action="{{ url_for('deletar', id=filme['id']) }}" method="POST" class="delete-form">
+                                <button type="submit" class="btn-delete" onclick="event.stopPropagation(); return confirm('Deletar este filme?')">×</button>
+                            </form>
+                            <img src="{{ filme['poster_url'] or 'https://via.placeholder.com/300x450/333/fff?text=Sem+Poster' }}" class="card-poster" alt="Poster">
+                            <div class="card-info">
+                                <span class="titulo">{{ filme['titulo'] }}</span>
+                                <div class="nota">★ {{ filme['nota'] }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- SEÇÃO: Lista Futuros -->
+                <div id="contentFuturos" class="content-section">
+                    <h2 class="section-subtitle">📋 Futuros</h2>
+
+                    <div class="futuros-filters">
+                        <div class="filter-item">
+                            <label>Ordenar por</label>
+                            <select id="filterOrdenacao" onchange="aplicarFiltrosFuturos()">
+                                <option value="prioridade">Prioridade</option>
+                                <option value="titulo_asc">Título A-Z</option>
+                                <option value="titulo_desc">Título Z-A</option>
+                                <option value="id_desc">Mais recentes</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Prioridade</label>
+                            <select id="filterPrioridade" onchange="aplicarFiltrosFuturos()">
+                                <option value="all">Todas</option>
+                                <option value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3">3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>Categoria</label>
+                            <div class="category-filters" id="categoryFilters">
+                                <button type="button" class="filter-block active" data-category="all" onclick="toggleCategoriaFilter(this)">Todas</button>
+                                {% for categoria in categorias_futuros %}
+                                <button type="button" class="filter-block" data-category="{{ categoria }}" onclick="toggleCategoriaFilter(this)">{{ categoria }}</button>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="filter-item">
+                            <label>Diretor</label>
+                            <input type="text" id="filterDiretorFuturos" placeholder="Ex: Nolan" oninput="aplicarFiltrosFuturos()">
+                        </div>
+                        <div class="filter-item">
+                            <label>Ator/Atriz</label>
+                            <input type="text" id="filterAtorFuturos" placeholder="Ex: McConaughey" oninput="aplicarFiltrosFuturos()">
+                        </div>
+                    </div>
+
+                    <div class="filmes-grid" id="gridFuturos">
+                        {% for futuro in futuros %}
+                        <div class="filme-card futuro-card" onclick="openFuturoModal(event)"
+                            data-id="{{ futuro['id'] }}"
+                            data-titulo="{{ futuro['titulo'] }}"
+                            data-diretor="{{ futuro['diretor'] }}"
+                            data-genero="{{ futuro['genero'] }}"
+                            data-ator="{{ futuro['ator_principal'] }}"
+                            data-prioridade="{{ futuro['prioridade'] or 3 }}"
+                            data-categoria="{{ futuro['categoria'] or '' }}"
+                            data-rt="{{ futuro['rotten_tomatoes'] }}"
+                            data-sinopse="{{ futuro['sinopse'] }}"
+                            data-poster="{{ futuro['poster_url'] }}">
+                            <form action="{{ url_for('editar_futuro', id=futuro['id']) }}" method="GET" class="edit-form">
+                                <button type="submit" class="btn-edit" onclick="event.stopPropagation();">✎</button>
+                            </form>
+                            <form action="{{ url_for('deletar_futuro', id=futuro['id']) }}" method="POST" class="delete-form">
+                                <button type="submit" class="btn-delete" onclick="event.stopPropagation(); return confirm('Remover da lista?')">×</button>
+                            </form>
+                            <img src="{{ futuro['poster_url'] or 'https://via.placeholder.com/300x450/333/fff?text=Futuro' }}" class="card-poster" alt="Poster">
+                            <div class="card-info">
+                                <span class="titulo">{{ futuro['titulo'] }}</span>
+                                <div class="futuro-meta">Prioridade {{ futuro['prioridade'] or 3 }} • {{ futuro['categoria'] or 'Sem categoria' }}</div>
+                                <div class="info-futuro">
+                                    {{ futuro['diretor'] }} • {{ futuro['genero'] }}
+                                    {% if futuro['rotten_tomatoes'] != 'N/A' %}<br>RT: {{ futuro['rotten_tomatoes'] }}{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modal Popover para Lista Futuros (escondido até clicar em + Futuro) -->
+        <div id="listaFuturosModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 600px;">
+                <span class="close" onclick="closeListaModal()">&times;</span>
+                <div class="form-container">
+                    <h1>📋 Adicionar à Lista de Futuros</h1>
+                    <form method="POST" action="{{ url_for('adicionar_futuro') }}" onsubmit="atualizarCategoriasPopover()">
+                                <div class="input-group">
+                            <label>Título do Filme</label>
+                            <input type="text" name="titulo" required>
+                            <small>Busca automática na TMDB + filtros aplicados</small>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Categoria</label>
+                            <div class="categoria-input-row">
+                                <input type="text" id="popoverCategoriaInput" placeholder="Ex: Sci-Fi" autocomplete="off">
+                                <button type="button" class="btn-add categoria-btn" onclick="adicionarCategoriaPopover()">Adicionar categoria</button>
+                            </div>
+                            <div id="popoverCategoriaTags" class="tags-container"></div>
+                            <input type="hidden" name="categoria" id="popoverCategoriaHidden">
+                        </div>
+
+                        <div class="input-group">
+                            <label>Prioridade</label>
+                            <select name="prioridade" required>
+                                <option value="5">5</option>
+                                <option value="4">4</option>
+                                <option value="3" selected>3</option>
+                                <option value="2">2</option>
+                                <option value="1">1</option>
+                            </select>
+                            <small>1 a 5, sendo 5 a maior prioridade.</small>
+                        </div>
+                        
+                        <div class="actions">
+                            <button type="submit" class="btn-save">Adicionar à Lista</button>
+                            <button type="button" class="btn-cancel" onclick="closeListaModal()">Cancelar</button>
+                        </div>
+                    </form>
+                <div id="resultadosBusca" class="resultados-grid" style="max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <!-- Modal Assistidos (mantido) -->
+        <div id="movieModal" class="modal">
+            <!-- Seu modal existente -->
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <div class="modal-body">
+                    <img id="modalPoster" src="" alt="Poster">
+                    <div class="modal-text">
+                        <h2 id="modalTitle"></h2>
+                        <p><strong style="color: #eee;">Diretor:</strong> <span id="modalDirector"></span> (<span id="modalYear"></span>)</p>
+                        <p><strong style="color: #eee;">Elenco:</strong> <span id="modalCast"></span></p>
+                        <div class="modal-nota-destaque">Sua nota: <span id="modalNota"></span>/10</div>
+                        <hr>
+                        <p><strong>Sinopse:</strong></p>
+                        <p id="modalSynopsis" style="line-height: 1.6;"></p>
+                        <hr>
+                        <p><strong>Sua Review:</strong></p>
+                        <p id="modalReview" class="review-box"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Futuros (mantido) -->
+        <div id="futuroModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeFuturoModal()">&times;</span>
+                <div class="modal-body">
+                    <img id="futuroPoster" src="" alt="Poster">
+                    <div class="modal-text">
+                        <h2 id="futuroTitle"></h2>
+                        <p><strong style="color: #eee;">Diretor:</strong> <span id="futuroDirector"></span></p>
+                        <p><strong style="color: #eee;">Categoria:</strong> <span id="futuroCategoria"></span></p>
+                        <p><strong style="color: #eee;">Prioridade:</strong> <span id="futuroPriority"></span></p>
+                        <p><strong style="color: #eee;">Gênero:</strong> <span id="futuroGenero"></span></p>
+                        <p><strong style="color: #eee;">Ator Principal:</strong> <span id="futuroAtor"></span></p>
+                        <p><strong style="color: #eee;">Rotten Tomatoes:</strong> <span id="futuroRT"></span></p>
+                        <form id="marcarAssistidoForm" method="POST" action="" style="margin-top: 20px;">
+                            <button type="submit" class="btn-save">Marcar como Assistido</button>
+                        </form>
+                        <hr>
+                        <p><strong>Sinopse:</strong></p>
+                        <p id="futuroSynopsis" style="line-height: 1.6;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Sidebar Navigation
+            function showSection(event, section) {
+                // Remove active de todos
+                document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+                
+                // Ativa seção clicada
+                event.currentTarget.classList.add('active');
+                document.getElementById(`content${section.charAt(0).toUpperCase() + section.slice(1)}`).classList.add('active');
+                
+                // Atualiza título
+                const titles = {assistidos: 'Assistidos', futuros: 'Lista de Futuros'};
+                document.getElementById('sectionTitle').textContent = titles[section];
+                if (section === 'futuros') {
+                    aplicarFiltrosFuturos();
+                } else {
+                    aplicarFiltrosAssistidos();
+                    filterMovies(); // Reaplica filtro em assistidos
+                }
+            }
+
+            // Seu código JavaScript existente (mantido igual)
+            function openModal(cardOrEvent) {
+                const card = cardOrEvent.currentTarget || cardOrEvent.target?.closest?.('.filme-card') || cardOrEvent;
+                if (!card || !card.getAttribute) {
+                    console.warn('openModal: card não encontrado', cardOrEvent);
+                    return;
+                }
+                const modal = document.getElementById("movieModal");
+                const titulo = card.getAttribute("data-titulo");
+                const diretor = card.getAttribute("data-diretor");
+                const ano = card.getAttribute("data-ano");
+                const nota = card.getAttribute("data-nota");
+                const sinopse = card.getAttribute("data-sinopse");
+                const elenco = card.getAttribute("data-elenco");
+                const review = card.getAttribute("data-review");
+                const poster = card.getAttribute("data-poster");
+
+                document.getElementById("modalTitle").innerText = titulo;
+                document.getElementById("modalDirector").innerText = diretor;
+                document.getElementById("modalYear").innerText = ano;
+                document.getElementById("modalNota").innerText = nota;
+                document.getElementById("modalSynopsis").innerText = sinopse || "Sinopse não disponível.";
+                document.getElementById("modalCast").innerText = elenco || "Elenco não informado.";
+                document.getElementById("modalReview").innerText = review || "Você não escreveu uma review.";
+                
+                const modalImg = document.getElementById("modalPoster");
+                if (poster && poster !== "None" && poster !== "") {
+                    modalImg.src = poster;
+                    modalImg.style.display = "block";
+                } else {
+                    modalImg.src = "https://via.placeholder.com/350x500/333/fff?text=Sem+Poster";
+                }
+                modal.style.display = "block";
+            }
+
+            function closeModal() { document.getElementById("movieModal").style.display = "none"; }
+            function showListaFuturos() { 
+                document.getElementById('listaFuturosModal').style.display = 'block';
+                buscarFuturos();
+            }
+            function closeListaModal() { document.getElementById('listaFuturosModal').style.display = 'none'; }
+
+            function buscarFuturos() {
+                const resultados = document.getElementById('resultadosBusca');
+                if (!resultados) return;
+                resultados.innerHTML = '<p style="text-align:center; color:#666;">Digite para buscar...</p>';
+            }
+
+            function toggleCategoriaFilter(button) {
+                document.querySelectorAll('#categoryFilters .filter-block').forEach(block => block.classList.remove('active'));
+                button.classList.add('active');
+                aplicarFiltrosFuturos();
+            }
+
+            function toggleCategoriaAssistidos(button) {
+                document.querySelectorAll('#assistidosCategoryFilters .filter-block').forEach(block => block.classList.remove('active'));
+                button.classList.add('active');
+                aplicarFiltrosAssistidos();
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const listaFuturosModal = document.getElementById('listaFuturosModal');
+                if (listaFuturosModal) {
+                    listaFuturosModal.style.display = 'none';
+                }
+            });
+
+            function atualizarCategoriasPopover() {
+                const tagsContainer = document.getElementById('popoverCategoriaTags');
+                const hiddenInput = document.getElementById('popoverCategoriaHidden');
+                const categorias = Array.from(tagsContainer.querySelectorAll('.tag-item')).map(tag => tag.textContent.replace('×', '').trim());
+                hiddenInput.value = categorias.join(', ');
+            }
+
+            function adicionarCategoriaPopover() {
+                const input = document.getElementById('popoverCategoriaInput');
+                const value = input.value.trim();
+                if (!value) return;
+
+                const tagsContainer = document.getElementById('popoverCategoriaTags');
+                const existing = Array.from(tagsContainer.querySelectorAll('.tag-item')).some(tag => tag.textContent.toLowerCase().includes(value.toLowerCase()));
+                if (existing) {
+                    input.value = '';
+                    return;
+                }
+
+                const tag = document.createElement('span');
+                tag.className = 'tag-item';
+                tag.innerHTML = `${value} <button type="button" onclick="removerCategoriaPopover(this)">×</button>`;
+                tagsContainer.appendChild(tag);
+                input.value = '';
+                atualizarCategoriasPopover();
+            }
+
+            function removerCategoriaPopover(button) {
+                const tag = button.parentElement;
+                tag.remove();
+                atualizarCategoriasPopover();
+            }
+
+            // Resto do seu JS igual...
+            function filterMovies() {
+                let input = document.getElementById('movieSearch').value.toLowerCase();
+                const activeSection = document.querySelector('.content-section.active .filmes-grid');
+                activeSection.querySelectorAll('.filme-card, .futuro-card').forEach(card => {
+                    let titulo = card.getAttribute('data-titulo').toLowerCase();
+                    card.style.display = titulo.includes(input) ? '' : 'none';
+                });
+            }
+
+            function aplicarFiltrosAssistidos() {
+                const notaValue = document.getElementById('filterNotaAssistidos').value;
+                const selectedCategoryButton = document.querySelector('#assistidosCategoryFilters .filter-block.active');
+                const categoriaValue = selectedCategoryButton ? selectedCategoryButton.dataset.category.toLowerCase() : 'all';
+                const diretorValue = document.getElementById('filterDiretorAssistidos').value.toLowerCase();
+                const atorValue = document.getElementById('filterAtorAssistidos').value.toLowerCase();
+                const ordenacao = document.getElementById('assistidosOrdenacao').value;
+                const grid = document.getElementById('gridAssistidos');
+                const cards = Array.from(grid.querySelectorAll('.filme-card'));
+
+                cards.forEach(card => {
+                    const nota = parseFloat(card.getAttribute('data-nota')) || 0;
+                    const categoria = (card.getAttribute('data-categoria') || '').toLowerCase();
+                    const diretor = (card.getAttribute('data-diretor') || '').toLowerCase();
+                    const ator = (card.getAttribute('data-elenco') || '').toLowerCase();
+
+                    const categorias = categoria.split(',').map(tag => tag.trim());
+                    const matches = (notaValue === 'all' || Math.floor(nota) === parseInt(notaValue, 10)) &&
+                        (categoriaValue === 'all' || categorias.some(tag => tag.includes(categoriaValue))) &&
+                        (!diretorValue || diretor.includes(diretorValue)) &&
+                        (!atorValue || ator.includes(atorValue));
+
+                    card.style.display = matches ? '' : 'none';
+                });
+
+                const visibleCards = cards.filter(card => card.style.display !== 'none');
+                visibleCards.sort((a, b) => {
+                    const titleA = a.getAttribute('data-titulo').toLowerCase();
+                    const titleB = b.getAttribute('data-titulo').toLowerCase();
+                    const notaA = parseFloat(a.getAttribute('data-nota')) || 0;
+                    const notaB = parseFloat(b.getAttribute('data-nota')) || 0;
+                    const idA = parseInt(a.getAttribute('data-id') || '0', 10);
+                    const idB = parseInt(b.getAttribute('data-id') || '0', 10);
+
+                    if (ordenacao === 'nota') {
+                        return notaB - notaA;
+                    }
+                    if (ordenacao === 'titulo_asc') {
+                        return titleA.localeCompare(titleB);
+                    }
+                    if (ordenacao === 'titulo_desc') {
+                        return titleB.localeCompare(titleA);
+                    }
+                    if (ordenacao === 'id_desc') {
+                        return idB - idA;
+                    }
+                    return 0;
+                });
+
+                visibleCards.forEach(card => grid.appendChild(card));
+            }
+
+            function aplicarFiltrosFuturos() {
+                const prioridadeValue = document.getElementById('filterPrioridade').value;
+                const selectedCategoryButton = document.querySelector('#categoryFilters .filter-block.active');
+                const categoriaValue = selectedCategoryButton ? selectedCategoryButton.dataset.category.toLowerCase() : 'all';
+                const diretorValue = document.getElementById('filterDiretorFuturos').value.toLowerCase();
+                const atorValue = document.getElementById('filterAtorFuturos').value.toLowerCase();
+                const ordenacao = document.getElementById('filterOrdenacao').value;
+                const grid = document.getElementById('gridFuturos');
+                const cards = Array.from(grid.querySelectorAll('.filme-card'));
+
+                cards.forEach(card => {
+                    const prioridade = card.getAttribute('data-prioridade') || '3';
+                    const categoria = (card.getAttribute('data-categoria') || '').toLowerCase();
+                    const diretor = (card.getAttribute('data-diretor') || '').toLowerCase();
+                    const ator = (card.getAttribute('data-ator') || '').toLowerCase();
+
+                    const categorias = categoria.split(',').map(tag => tag.trim());
+                    const matches = (prioridadeValue === 'all' || prioridade === prioridadeValue) &&
+                        (categoriaValue === 'all' || categorias.some(tag => tag.includes(categoriaValue))) &&
+                        (!diretorValue || diretor.includes(diretorValue)) &&
+                        (!atorValue || ator.includes(atorValue));
+
+                    card.style.display = matches ? '' : 'none';
+                });
+
+                const visibleCards = cards.filter(card => card.style.display !== 'none');
+                visibleCards.sort((a, b) => {
+                    const titleA = a.getAttribute('data-titulo').toLowerCase();
+                    const titleB = b.getAttribute('data-titulo').toLowerCase();
+                    const priorityA = parseInt(a.getAttribute('data-prioridade') || '3', 10);
+                    const priorityB = parseInt(b.getAttribute('data-prioridade') || '3', 10);
+                    const idA = parseInt(a.getAttribute('data-id') || '0', 10);
+                    const idB = parseInt(b.getAttribute('data-id') || '0', 10);
+
+                    if (ordenacao === 'prioridade') {
+                        return priorityB - priorityA;
+                    }
+                    if (ordenacao === 'titulo_asc') {
+                        return titleA.localeCompare(titleB);
+                    }
+                    if (ordenacao === 'titulo_desc') {
+                        return titleB.localeCompare(titleA);
+                    }
+                    if (ordenacao === 'id_desc') {
+                        return idB - idA;
+                    }
+                    return 0;
+                });
+
+                visibleCards.forEach(card => grid.appendChild(card));
+            }
+
+            // Suas outras funções (openFuturoModal, buscarFuturos, etc.) permanecem iguais
+            function openFuturoModal(cardOrEvent) {
+                const card = cardOrEvent.currentTarget || cardOrEvent.target?.closest?.('.filme-card') || cardOrEvent;
+                if (!card || !card.getAttribute) {
+                    console.warn('openFuturoModal: card não encontrado', cardOrEvent);
+                    return;
+                }
+                const futuroId = card.getAttribute('data-id');
+                document.getElementById('futuroTitle').innerText = card.getAttribute('data-titulo');
+                document.getElementById('futuroDirector').innerText = card.getAttribute('data-diretor');
+                document.getElementById('futuroCategoria').innerText = card.getAttribute('data-categoria') || 'Sem categoria';
+                document.getElementById('futuroPriority').innerText = card.getAttribute('data-prioridade') || '3';
+                document.getElementById('futuroGenero').innerText = card.getAttribute('data-genero');
+                document.getElementById('futuroAtor').innerText = card.getAttribute('data-ator');
+                document.getElementById('futuroRT').innerText = card.getAttribute('data-rt');
+                document.getElementById('futuroSynopsis').innerText = card.getAttribute('data-sinopse') || 'Sinopse não disponível.';
+                document.getElementById('futuroPoster').src = card.getAttribute('data-poster') || 'https://via.placeholder.com/350x500/333/fff?text=Sem+Poster';
+                document.getElementById('marcarAssistidoForm').action = `/marcar_assistido/${futuroId}`;
+                document.getElementById('futuroModal').style.display = 'block';
+            }
+            function closeFuturoModal() { document.getElementById('futuroModal').style.display = 'none'; }
+
+            window.onclick = (event) => {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            };
+        </script>
+    </body>
+</html>

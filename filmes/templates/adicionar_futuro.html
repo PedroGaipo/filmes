@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Lista Futuros - Letterboxd</title>
+</head>
+<body>
+    <div class="form-container">
+        <h1>📋 Adicionar à Lista de Futuros</h1>
+        <form method="POST" action="{{ url_for('adicionar_futuro') }}" onsubmit="atualizarCategorias()">
+            <div class="input-group">
+                <label>Título do Filme</label>
+                <input type="text" name="titulo" placeholder="Ex: Duna 3" required>
+                <small>Busca automática na TMDB + filtros aplicados</small>
+            </div>
+
+            <div class="input-group">
+                <label>Categoria</label>
+                <div class="categoria-input-row">
+                    <input type="text" id="categoriaInput" placeholder="Ex: Sci-Fi" autocomplete="off">
+                    <button type="button" class="btn-add categoria-btn" onclick="adicionarCategoria()">Adicionar categoria</button>
+                </div>
+                <div id="categoriaTags" class="tags-container"></div>
+                <input type="hidden" name="categoria" id="categoriaHidden">
+            </div>
+
+            <div class="input-group">
+                <label>Prioridade</label>
+                <select name="prioridade" required>
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                </select>
+                <small>1 a 5, sendo 5 a maior prioridade.</small>
+            </div>
+            
+            <div class="actions">
+                <button type="submit" class="btn-save">Adicionar à Lista</button>
+                <a href="/" class="btn-cancel">Cancelar</a>
+            </div>
+        </form>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <p>Ou use o <strong>popover rápido</strong> na home! 🎯</p>
+        </div>
+    </div>
+    <script>
+        function atualizarCategorias() {
+            const tagsContainer = document.getElementById('categoriaTags');
+            const hiddenInput = document.getElementById('categoriaHidden');
+            const categorias = Array.from(tagsContainer.querySelectorAll('.tag-item')).map(tag => tag.textContent.replace('×', '').trim());
+            hiddenInput.value = categorias.join(', ');
+        }
+
+        function adicionarCategoria() {
+            const input = document.getElementById('categoriaInput');
+            const value = input.value.trim();
+            if (!value) return;
+
+            const tagsContainer = document.getElementById('categoriaTags');
+            const existing = Array.from(tagsContainer.querySelectorAll('.tag-item')).some(tag => tag.textContent.toLowerCase().includes(value.toLowerCase()));
+            if (existing) {
+                input.value = '';
+                return;
+            }
+
+            const tag = document.createElement('span');
+            tag.className = 'tag-item';
+            tag.innerHTML = `${value} <button type="button" onclick="removerCategoria(this)">×</button>`;
+            tagsContainer.appendChild(tag);
+            input.value = '';
+            atualizarCategorias();
+        }
+
+        function removerCategoria(button) {
+            const tag = button.parentElement;
+            tag.remove();
+            atualizarCategorias();
+        }
+    </script>
+</body>
+</html>
